@@ -1,0 +1,22 @@
+{
+  "name": "ninshid-portfolio",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "prepare:pdfjs": "node scripts/copy-pdfjs.js",
+    "postinstall": "node scripts/copy-pdfjs.js"
+  },
+  "dependencies": {
+    "pdfjs-dist": "^2.16.105",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "react-draggable": "^4.4.5"
+  },
+  "devDependencies": {
+    "sass": "^1.70.0",
+    "vite": "^5.0.0"
+  }
+}
