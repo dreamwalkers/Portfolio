@@ -1,0 +1,32 @@
+{
+  "profile": {
+    "name": "Ninshid P H",
+    "title": "Senior Software Consultant",
+    "subtitle": "Project Lead, Evaluation, Execution",
+    "summary": [
+      "I bring a wealth of experience in crafting innovative, high-impact software solutions that drive measurable business outcomes. Skilled in guiding complex projects from concept to deployment, I leverage expertise across both backend and frontend technologies to build robust, scalable applications tailored to client needs.",
+      "My approach centers on aligning technical requirements with strategic objectives, ensuring every solution not only addresses immediate goals but also positions clients for long-term success. I thrive on solving challenging problems, optimizing performance, and elevating user experiences. With a strong emphasis on collaboration, clear communication, and agile practices, I enable teams to deliver quality software on time and under pressure.",
+      "Throughout my career, I have embraced emerging technologies and industry best practices to stay ahead in a rapidly evolving landscape. My commitment to continuous growth allows me to consistently add value—whether by improving code quality, enhancing system efficiency, or mentoring the next generation of developers. Passionate about turning ideas into impactful applications, I am driven to create solutions that leave a lasting mark."
+    ],
+    "photo": "/assets/profile.png"
+  },
+  "experience": [
+    {"company":"Coforge","role":"Senior Software Engineer","period":"2023 - Present","details":"Worked on enterprise-grade solutions."},
+    {"company":"Hidden Brains","role":"Technical Lead","period":"2021 - 2023","details":"Led web and cloud projects."},
+    {"company":"Harris Financial","role":"Senior Developer","period":"2018 - 2021","details":"Built financial systems."},
+    {"company":"Qatar Airways","role":"Software Engineer","period":"2015 - 2018","details":"Worked on reservation and operations systems."}
+  ],
+  "skills": ["ASP.Net Core","React","Angular","SQL Server","Azure","GitHub Copilot","TypeScript","HTML/CSS","REST APIs"],
+  "projects": [
+    {"name":"Commodity Price Risk Management","desc":"End-to-end CP Risk system with market data ingestion and analytics."},
+    {"name":"QRISP","desc":"Quality and regulatory information system."},
+    {"name":"IGWorkbook","desc":"Interactive workbook for financial analysts."},
+    {"name":"ZealogicsHR","desc":"HR management platform."}
+  ],
+  "contact": {
+    "phone":"+91-XXXXXXXXXX",
+    "email":"ninshid@example.com",
+    "linkedin":"https://www.linkedin.com/in/ninshid-p-h-73253029",
+    "blog":"https://ninshid.example.com"
+  }
+}

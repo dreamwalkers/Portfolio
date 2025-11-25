@@ -1,0 +1,161 @@
+@import url('https://fonts.googleapis.com/css2?family=Segoe+UI:wght@400;600;700&display=swap');
+
+:root{
+  --xp-blue:#1e90ff;
+  --xp-taskbar:#0b4a8a;
+  --xp-green:#00a000;
+}
+
+.sw-reset{box-sizing:border-box}
+*{box-sizing:border-box;font-family:'Segoe UI',system-ui,Arial,sans-serif}
+html,body,#root{height:100%;overflow:hidden}
+.xp-root{height:100vh;position:relative;overflow:hidden}
+
+.desktop{height:calc(100vh - 40px);background-size:cover;background-position:center;padding:16px}
+.icons{position:absolute;left:0;top:0;right:0;bottom:0}
+.desktop-icon{width:96px;color:#072034;text-shadow:none;cursor:pointer;display:flex;flex-direction:column;align-items:center;text-align:center;touch-action:none;user-select:none}
+.desktop-icon .icon-art{height:72px;width:72px;display:flex;align-items:center;justify-content:center;border-radius:10px;background:transparent}
+.desktop-icon .icon-art img{max-width:100%;max-height:100%;border-radius:8px;background:transparent}
+.icon-label{font-size:13px;color:#04233a;margin-top:8px}
+
+.desktop-icon.dragging{opacity:0.92;transform:translateZ(0);}
+
+/* Taskbar */
+.taskbar{height:40px;background:linear-gradient(#0b63b3,#083a6a);position:fixed;left:0;right:0;bottom:0;display:flex;align-items:center;padding:0 8px;color:white}
+.taskbar {height:40px;position:fixed;left:0;right:0;bottom:0;display:flex;align-items:center;padding:0 6px;color:white}
+.taskbar .left{display:flex;align-items:center}
+.taskbar::before{content:'';position:absolute;left:0;right:0;top:0;height:100%;background:linear-gradient(180deg,#2b78d6 0%, #1a5aa8 40%, #0b447a 100%);z-index:-1}
+
+/* Start button styled like Windows XP */
+.start-button{display:flex;align-items:center;gap:8px;background:linear-gradient(#6bd05c,#37a234);border:none;padding:6px 12px;border-radius:18px;margin-right:10px;cursor:pointer;box-shadow:inset 0 1px 0 rgba(255,255,255,0.6), 0 1px 0 rgba(0,0,0,0.2)}
+.start-button:active{transform:translateY(1px)}
+.start-flag{display:inline-flex;align-items:center}
+.start-text{font-weight:600;color:#fff;text-transform:lowercase;font-size:14px;letter-spacing:0.5px}
+.start-button .start-flag svg{display:block}
+
+.start-menu{position:absolute;bottom:54px;left:8px;background:#fff;color:#111;padding:8px;border-radius:6px;box-shadow:0 6px 18px rgba(0,0,0,0.5);min-width:160px}
+.start-menu div{padding:6px 10px;cursor:pointer}
+.start-menu div:hover{background:#f0f0f0}
+.center{flex:1;display:flex;gap:6px;padding-left:6px}
+.task-button{min-width:100px;background:rgba(255,255,255,0.08);border:none;color:white;padding:6px 8px;border-radius:3px;cursor:pointer}
+.task-button.min{opacity:0.7}
+.right{display:flex;align-items:center}
+.tray{display:flex;align-items:center;gap:8px;color:white}
+
+/* XP-style tray box on the right */
+.tray-box{height:24px;padding:4px 8px;background:linear-gradient(#8fc6ff,#6fb3ff);border-radius:6px;display:flex;align-items:center;gap:8px;color:#012a4a;box-shadow:inset 0 1px 0 rgba(255,255,255,0.5)}
+.tray-icon{font-size:14px}
+.clock{padding:2px 8px;background:transparent;border-radius:2px;font-weight:700;color:#012a4a}
+
+/* Window */
+.xp-window{position:absolute;background:#fff;border:4px solid #c0d8ff;box-shadow:0 10px 24px rgba(0,0,0,0.4);border-radius:3px;overflow:hidden;display:flex;flex-direction:column}
+.xp-window-header{display:flex;align-items:center;justify-content:space-between;background:linear-gradient(#dfefff,#b2d4ff);padding:6px 8px;cursor:grab}
+.xp-window-header .title{font-weight:600;color:#03366b}
+.xp-window-header .controls button{margin-left:6px;background:transparent;border:none;cursor:pointer}
+.xp-window-body{padding:12px;flex:1;overflow:auto}
+.resize-handle{width:12px;height:12px;position:absolute;right:2px;bottom:2px;cursor:se-resize;background:transparent}
+
+/* Animations for open, close, minimize */
+@keyframes xp-open {
+  0% { transform: scale(0.86) translateY(10px); opacity: 0 }
+  100% { transform: scale(1) translateY(0); opacity: 1 }
+}
+@keyframes xp-close {
+  0% { transform: scale(1) translateY(0); opacity: 1 }
+  100% { transform: scale(0.86) translateY(10px); opacity: 0 }
+}
+@keyframes xp-minimize {
+  0% { transform: scale(1) translateY(0); opacity: 1 }
+  100% { transform: scale(0.36) translateY(40vh); opacity: 0 }
+}
+
+.xp-window.opening{animation: xp-open 260ms cubic-bezier(.2,.8,.2,1) both}
+.xp-window.closing{animation: xp-close 200ms ease both}
+.xp-window.minimizing{animation: xp-minimize 260ms cubic-bezier(.2,.8,.2,1) both}
+
+/* ensure transform/opacity changes are smooth when not animating */
+.xp-window{transition: transform 160ms ease, opacity 160ms ease}
+
+/* content styles */
+.about{display:flex;gap:0;align-items:stretch}
+.about .profile{width:300px;height:100%;border-radius:8px 0 0 8px;object-fit:cover;display:block;object-position:top center;margin:0;padding:0}
+.about-text{display:flex;flex-direction:column}
+.about-text h2{margin:0; font-size:22px}
+.about-text h4{margin:6px 0 12px 0;color:#335; font-size:16px; font-weight:600}
+.about-text p{margin:0 0 20px 0;line-height:1.6;color:#213; font-size:16px}
+
+/* About card style (image-left / card-right like the attachment) */
+.about-card{background:#fff; border-radius:0 8px 8px 0; padding:18px 20px; box-shadow:0 6px 18px rgba(0,0,0,0.08); border:1px solid rgba(0,0,0,0.04); max-width:720px; display:flex;flex-direction:column}
+/* force card and image to match heights */
+.about-card, .about .profile{min-height:720px}
+.about-badge{display:inline-block;background:#233a4b;color:#fff;padding:6px 10px;border-radius:4px;font-weight:700;font-size:12px;letter-spacing:0.6px;margin-bottom:12px}
+.about-hero{font-size:34px;line-height:1;letter-spacing:0.6px;margin:0 0 10px 0;text-transform:uppercase;color:#0b2640}
+.about-meta{display:flex;align-items:center;gap:12px;margin-bottom:10px}
+.about-meta h4{margin:0}
+.about-divider{width:2px;height:20px;background:linear-gradient(#2b3b46,#cfd8df);border-radius:2px;display:inline-block}
+.about-subtitle{color:#556677;font-size:14px;margin:0}
+.about-copy p{color:#2b3b46;font-size:15px;margin:0 0 14px 0}
+.about-cta{display:inline-block;margin-top:8px;color:#0b63b3;font-weight:700;text-decoration:none}
+
+/* tune image/card spacing when content area smaller */
+@media(max-width:900px){
+  .about-card{max-width:520px}
+  .about-hero{font-size:28px}
+}
+
+/* responsive height adjustments */
+@media(max-width:1200px){
+  .about-card, .about .profile{min-height:620px}
+}
+@media(max-width:900px){
+  .about-card, .about .profile{min-height:520px}
+}
+
+@media(max-width:600px){
+  .about{flex-direction:column;align-items:center;gap:12px}
+  .about .profile{width:100%;height:auto;border-radius:8px;}
+  .about-card{border-radius:8px;padding:16px}
+  .about-text{width:100%;text-align:left}
+  .about-hero{font-size:24px;text-align:left}
+  .about-meta{flex-direction:column;align-items:flex-start;gap:6px}
+  .about-divider{display:none}
+}
+.experience .exp-item{margin-bottom:10px;padding-bottom:6px;border-bottom:1px dashed #eee}
+.skills{display:flex;flex-wrap:wrap;gap:8px}
+.skill{background:#eef5ff;padding:6px 8px;border-radius:4px}
+.projects .project{margin-bottom:10px}
+.contact a{color:var(--xp-blue)}
+
+/* responsive */
+@media(max-width:600px){
+  .desktop{padding:8px;background-position:top}
+  .xp-window{width:90% !important;left:5% !important;top:40px !important}
+  .icons{gap:10px}
+  .about{flex-direction:column;align-items:center}
+  .about .profile{width:120px;height:120px}
+  .about-text{width:100%;text-align:center}
+  .about-text p{margin-bottom:16px}
+}
+
+/* Splash (Windows XP boot look) */
+.xp-splash{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:#000;z-index:9999;color:white}
+.xp-splash-inner{width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.xp-logo-wrap{flex:1;display:flex;align-items:center;justify-content:center}
+.xp-logo-wrap img{max-width:50%;height:auto;display:block}
+.xp-dots{height:20px;width:260px;background:transparent;border-radius:6px;margin-bottom:48px;overflow:visible;display:flex;align-items:center;justify-content:center}
+.xp-dots-track{position:relative;width:200px;height:14px;overflow:hidden;border-radius:8px;background:linear-gradient(180deg,#0b2430,#05121a);padding:3px;border:1px solid rgba(255,255,255,0.06);box-shadow:inset 0 1px 0 rgba(255,255,255,0.03);display:flex;align-items:center}
+.xp-dots-inner{display:flex;gap:10px;align-items:center;position:relative;left:-80px;animation: xp-dots-group 2400ms linear infinite}
+.xp-dot{width:14px;height:10px;border-radius:2px;background:linear-gradient(180deg,#6fb8ff,#3b6fff);display:inline-block;box-shadow:0 2px 0 rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.7)}
+
+@keyframes xp-dots-group{
+  0% { left: -80px; opacity: 1 }
+  8% { opacity: 1 }
+  60% { left: calc(100% - 100px); opacity: 1 }
+  92% { opacity: 0.6 }
+  100% { left: calc(100% - 100px); opacity: 0 }
+}
+
+.xp-splash .xp-logo-wrap img{filter:drop-shadow(0 6px 18px rgba(0,0,0,0.7))}
+
+.xp-status{color:#cfe9ff;margin-bottom:24px;font-weight:600}
+
