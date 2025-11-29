@@ -178,7 +178,19 @@
 
 /* Dock */
 .android-theme .android-dock{ position:fixed; left:50%; transform:translateX(-50%); bottom: 0; display:flex; flex-direction:column; align-items:center; gap:8px; z-index:1000 }
-.android-theme .android-dock.hidden{ display:none !important }
+.android-theme .android-dock{
+  /* animated slide-up behavior */
+  transform: translateX(-50%) translateY(0);
+  opacity: 1;
+  transition: transform 320ms cubic-bezier(.2,.9,.2,1), opacity 220ms ease;
+  will-change: transform, opacity;
+}
+.android-theme .android-dock.hidden{
+  /* move the dock down off-screen and hide interactions */
+  transform: translateX(-50%) translateY(120%);
+  opacity: 0;
+  pointer-events: none;
+}
 
 /* dock toggle handle (small pill) */
 .android-theme .dock-toggle{
