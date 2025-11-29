@@ -86,8 +86,19 @@ export default function Desktop({content, windows, onOpen, onFocus, onUpdate, on
   const iconsRef = useRef(null)
   const dockRef = useRef(null)
   const focusSinkRef = useRef(null)
+  const dragSrcRef = useRef(null)
   const [dockVisible, setDockVisible] = useState(true)
   const [showDock, setShowDock] = useState(false)
+  // always show lockscreen on mobile reloads (do not persist unlocked state)
+  const [mobileLocked, setMobileLocked] = useState(() => {
+    try{
+      return !!isMobile
+    }catch(e){ return true }
+  })
+  const [unlocking, setUnlocking] = useState(false)
+  const [searchQuery, setSearchQuery] = useState('')
+  const lockOverlayRef = useRef(null)
+  const lockTouchRef = useRef({startY:0,startX:0,startTime:0,tracking:false})
 
   // select dock icons (prefer certain ids if present)
   const preferredDock = ['profile','resume','projects','linkedin']
@@ -217,6 +228,96 @@ export default function Desktop({content, windows, onOpen, onFocus, onUpdate, on
     setInert(dockRef.current, !visible)
   },[showDock, dockVisible])
 
+  // if not mobile, ensure lock state is disabled
+  useEffect(()=>{
+    if (!isMobile){ setMobileLocked(false); setUnlocking(false) }
+  },[isMobile])
+
+  function doUnlock(){
+    if (!mobileLocked) return
+    setUnlocking(true)
+    setTimeout(()=>{
+      // do not persist unlocked state so lockscreen appears on each reload
+      setMobileLocked(false)
+      setUnlocking(false)
+      try{ if (lockOverlayRef.current) lockOverlayRef.current.style.transform = '' }catch(e){}
+    }, 420)
+  }
+
+  function handleLockTouchStart(e){
+    if (!mobileLocked || unlocking) return
+    const t = (e.touches && e.touches[0]) || null
+    const y = t ? t.clientY : (e.clientY || 0)
+    const x = t ? t.clientX : (e.clientX || 0)
+    lockTouchRef.current.startY = y
+    lockTouchRef.current.startX = x
+    lockTouchRef.current.startTime = Date.now()
+    lockTouchRef.current.tracking = (y > window.innerHeight - 180)
+    // add visual tracking class and subtle haptic feedback if available
+    try{ if (lockOverlayRef.current) lockOverlayRef.current.classList.add('tracking') }catch(e){}
+    try{ if (navigator && navigator.vibrate) navigator.vibrate(10) }catch(e){}
+  }
+
+  function handleLockTouchMove(e){
+    if (!lockTouchRef.current.tracking) return
+    const t = (e.touches && e.touches[0]) || null
+    const y = t ? t.clientY : (e.clientY || 0)
+    const deltaY = Math.min(0, y - lockTouchRef.current.startY)
+    try{ if (lockOverlayRef.current) lockOverlayRef.current.style.transform = `translateY(${deltaY}px)` }catch(e){}
+  }
+
+  function handleLockTouchEnd(e){
+    if (!lockTouchRef.current.tracking) return
+    const t = (e.changedTouches && e.changedTouches[0]) || null
+    const y = t ? t.clientY : (e.clientY || 0)
+    const x = t ? t.clientX : (e.clientX || 0)
+    const dt = Date.now() - lockTouchRef.current.startTime
+    const deltaY = y - lockTouchRef.current.startY
+    const deltaX = x - lockTouchRef.current.startX
+    if (deltaY < -80 && Math.abs(deltaX) < 120 && dt < 900){
+      doUnlock()
+    } else {
+      try{ if (lockOverlayRef.current) lockOverlayRef.current.style.transform = '' }catch(e){}
+    }
+    // remove tracking class
+    try{ if (lockOverlayRef.current) lockOverlayRef.current.classList.remove('tracking') }catch(e){}
+    lockTouchRef.current.tracking = false
+  }
+
+  function handleLockMouseDown(e){
+    if (!mobileLocked || unlocking) return
+    lockTouchRef.current.startY = e.clientY || 0
+    lockTouchRef.current.startX = e.clientX || 0
+    lockTouchRef.current.startTime = Date.now()
+    lockTouchRef.current.tracking = (lockTouchRef.current.startY > window.innerHeight - 180)
+    try{ if (lockOverlayRef.current) lockOverlayRef.current.classList.add('tracking') }catch(e){}
+    try{ if (navigator && navigator.vibrate) navigator.vibrate(10) }catch(e){}
+    window.addEventListener('mousemove', handleLockMouseMove)
+    window.addEventListener('mouseup', handleLockMouseUp)
+  }
+
+  function handleLockMouseMove(e){
+    if (!lockTouchRef.current.tracking) return
+    const deltaY = Math.min(0, e.clientY - lockTouchRef.current.startY)
+    try{ if (lockOverlayRef.current) lockOverlayRef.current.style.transform = `translateY(${deltaY}px)` }catch(e){}
+  }
+
+  function handleLockMouseUp(e){
+    if (!lockTouchRef.current.tracking) return
+    const dt = Date.now() - lockTouchRef.current.startTime
+    const deltaY = e.clientY - lockTouchRef.current.startY
+    const deltaX = e.clientX - lockTouchRef.current.startX
+    if (deltaY < -80 && Math.abs(deltaX) < 120 && dt < 900){
+      doUnlock()
+    } else {
+      try{ if (lockOverlayRef.current) lockOverlayRef.current.style.transform = '' }catch(e){}
+    }
+    try{ if (lockOverlayRef.current) lockOverlayRef.current.classList.remove('tracking') }catch(e){}
+    lockTouchRef.current.tracking = false
+    window.removeEventListener('mousemove', handleLockMouseMove)
+    window.removeEventListener('mouseup', handleLockMouseUp)
+  }
+
   useEffect(()=>{
     // log icon count for debugging
     try{ console.log('[Desktop] icons count=', iconsList.length) }catch(e){}
@@ -231,10 +332,54 @@ export default function Desktop({content, windows, onOpen, onFocus, onUpdate, on
   // keep the desktop wallpaper consistent across devices; show profile photo only inside the About window
   const wallpaper = '/assets/wallpaper.jpeg'
 
+  // compute which icons to show based on search query
+  const qLower = (searchQuery || '').trim().toLowerCase()
+  // defensive: ensure iconsOrder is an array (in case localStorage was corrupted)
+  const baseIcons = Array.isArray(iconsOrder) ? iconsOrder : (iconsOrder ? Object.keys(iconsOrder) : [])
+  if (!Array.isArray(iconsOrder)) console.warn('[Desktop] iconsOrder is not an array, using fallback keys', iconsOrder)
+  const shownIcons = qLower ? baseIcons.filter(id => {
+    const it = iconsList.find(x=>x.id===id)
+    return it && it.label && it.label.toLowerCase().includes(qLower)
+  }) : baseIcons
+  // defensive: ensure we render an array
+  let shownList = []
+  if (Array.isArray(shownIcons)) shownList = shownIcons
+  else if (shownIcons && typeof shownIcons === 'object') shownList = Object.values(shownIcons)
+  else shownList = []
+  if (!Array.isArray(shownIcons)) console.warn('[Desktop] shownIcons coerced to array', shownIcons)
+
   return (
     <div className="desktop" style={{backgroundImage:`url(${wallpaper})`}}>
       {isMobile ? (
         <>
+         {/* Mobile lock screen overlay shown on first visit */}
+          {mobileLocked && (
+            <div
+              ref={lockOverlayRef}
+              className={"android-lockscreen" + (unlocking ? ' unlocking' : '')}
+              style={{backgroundImage: `url(${(content && content.profile && content.profile.photo) || '/assets/wallpaper.jpeg'})`}}
+              onTouchStart={handleLockTouchStart} onTouchMove={handleLockTouchMove} onTouchEnd={handleLockTouchEnd}
+              onMouseDown={handleLockMouseDown}
+              role="button" aria-label="Unlock">
+              <div className="ls-top">
+                <div className="ls-date">{dateStr}</div>
+                <div className="ls-weather">🌤 58°F</div>
+              </div>
+              <div className="ls-time">{new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}</div>
+              <div className="ls-handle" aria-hidden="true">
+                <div className="ls-handle-bar" />
+                <div className="ls-handle-arrow">▲</div>
+              </div>
+              <div className="ls-lock">
+                <div className="ls-lock-circle">🔓</div>
+              </div>
+              <div className="ls-bottom">
+                <div className="ls-left">🏠</div>
+                <div className="ls-note">Kept unlocked by Smart Lock</div>
+                <div className="ls-right">▦</div>
+              </div>
+            </div>
+          )}
           <header className="android-header">
             <div className="time">{new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}</div>
             <div className="date">{dateStr}</div>
@@ -260,41 +405,86 @@ export default function Desktop({content, windows, onOpen, onFocus, onUpdate, on
           <div className="android-search">
             <div className="g-pill">
               <div className="g-logo">G</div>
-              <div className="g-input">Search</div>
-              <div className="g-mic">🎤</div>
+              <input className="g-input" value={searchQuery} onChange={e=>setSearchQuery(e.target.value)} placeholder="Search" aria-label="Search apps" />
+              <button className="g-mic" aria-label="Voice search">🎤</button>
             </div>
           </div>
 
           <div ref={iconsRef} className="icons android-grid">
-            {iconsOrder.map(id => {
+            {shownList.map(id => {
               const it = iconsList.find(x=>x.id===id) || iconsList[0]
               return (
                 <div key={it.id}
                      className={"card app-card"}
+                     data-id={it.id}
                      role="button"
                      draggable
-                     onDragStart={(e)=>{ e.dataTransfer.setData('text/plain', it.id); e.dataTransfer.effectAllowed = 'move'; e.currentTarget.classList.add('dragging') }}
+                     onDragStart={(e)=>{
+                       try{ e.dataTransfer.setData('text/plain', it.id); e.dataTransfer.effectAllowed = 'move'; }catch(err){}
+                       dragSrcRef.current = it.id
+                       e.currentTarget.classList.add('dragging')
+                     }}
+                     onTouchStart={(e)=>{
+                       // begin touch-based drag: record source id and add dragging class
+                       dragSrcRef.current = it.id
+                       try{ e.currentTarget.classList.add('dragging') }catch(e){}
+                     }}
+                     onTouchEnd={(e)=>{
+                       // detect where the touch ended and perform swap if over another card
+                       try{
+                         const t = (e.changedTouches && e.changedTouches[0]) || null
+                         if (!t) return
+                         const el = document.elementFromPoint(t.clientX, t.clientY)
+                         if (!el) return
+                         // find nearest card ancestor
+                         const card = el.closest && el.closest('.card')
+                         const dropId = card && card.getAttribute && card.getAttribute('data-id')
+                         const dragId = dragSrcRef.current
+                         if (dragId && dropId && dragId !== dropId){
+                           const next = [...iconsOrder]
+                           const from = next.indexOf(dragId)
+                           const to = next.indexOf(dropId)
+                           if (from > -1 && to > -1 && from !== to){
+                             const tmp = next[from]
+                             next[from] = next[to]
+                             next[to] = tmp
+                             setIconsOrder(next)
+                           }
+                         }
+                       }catch(e){}
+                       // cleanup
+                       try{ e.currentTarget.classList.remove('dragging') }catch(e){}
+                       dragSrcRef.current = null
+                     }}
                      onDragOver={(e)=>{ e.preventDefault(); e.currentTarget.classList.add('drag-over') }}
                      onDragLeave={(e)=>{ e.currentTarget.classList.remove('drag-over') }}
                      onDrop={(e)=>{
                        e.preventDefault();
-                       const dragId = e.dataTransfer.getData('text/plain')
+                       // prefer in-memory drag id (safer on some browsers/devices), fall back to dataTransfer
+                       const dt = (e.dataTransfer && (()=>{
+                         try{ return e.dataTransfer.getData('text/plain') }catch(e){ return '' }
+                       })()) || ''
+                       const dragId = dragSrcRef.current || dt
                        const dropId = it.id
                        if (dragId && dragId !== dropId){
-                         const next = [...iconsOrder]
-                         const from = next.indexOf(dragId)
-                         const to = next.indexOf(dropId)
-                         if (from > -1 && to > -1){
-                           next.splice(from,1)
-                           next.splice(to,0,dragId)
-                           setIconsOrder(next)
-                         }
+                          // swap positions of dragged and dropped icons (swap-on-drop)
+                          const next = [...iconsOrder]
+                          const from = next.indexOf(dragId)
+                          const to = next.indexOf(dropId)
+                          if (from > -1 && to > -1 && from !== to){
+                            const tmp = next[from]
+                            next[from] = next[to]
+                            next[to] = tmp
+                            setIconsOrder(next)
+                          }
                        }
                        // cleanup classes
                        const cards = iconsRef.current && iconsRef.current.querySelectorAll('.card')
                        cards && cards.forEach(c=>{ c.classList.remove('drag-over'); c.classList.remove('dragging') })
+                       // clear fallback drag id
+                       dragSrcRef.current = null
                      }}
-                     onDragEnd={(e)=>{ e.currentTarget.classList.remove('dragging'); const cards = iconsRef.current && iconsRef.current.querySelectorAll('.card'); cards && cards.forEach(c=>c.classList.remove('drag-over')) }}
+                     onDragEnd={(e)=>{ e.currentTarget.classList.remove('dragging'); const cards = iconsRef.current && iconsRef.current.querySelectorAll('.card'); cards && cards.forEach(c=>c.classList.remove('drag-over')); dragSrcRef.current = null }}
                      onClick={it.action}
                      tabIndex={0}>
                   <div className="card-icon">{it.icon}</div>
