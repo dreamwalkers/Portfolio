@@ -46,6 +46,10 @@ html,body,#root{height:100%;overflow:hidden}
 
 .desktop-icon.dragging{opacity:0.92;transform:translateZ(0);}
 
+/* drag-over visuals for Android grid cards */
+.android-theme .icons.android-grid .card.drag-over{ outline: 2px dashed rgba(0,0,0,0.12); transform: translateY(-6px); }
+.android-theme .icons.android-grid .card.dragging{ opacity:0.6; transform: scale(0.98) }
+
 /* Taskbar */
 .taskbar{height:40px;background:linear-gradient(#0b63b3,#083a6a);position:fixed;left:0;right:0;bottom:0;display:flex;align-items:center;padding:0 8px;color:white}
 .taskbar {height:40px;position:fixed;left:0;right:0;bottom:0;display:flex;align-items:center;padding:0 6px;color:white}

@@ -42,6 +42,15 @@ export default function Desktop({content, windows, onOpen, onFocus, onUpdate, on
     {id:'profile', label:content.profile.name, icon:(<img src={content.profile.photo} alt="profile"/>), action:()=>onOpen('About Me')}
   ]
 
+  // icon order for Android grid (reorderable). Initialize from localStorage if present.
+  const [iconsOrder, setIconsOrder] = useState(()=>{
+    try{
+      const raw = localStorage.getItem('androidIconsOrder')
+      if (raw) return JSON.parse(raw)
+    }catch(e){}
+    return iconsList.map(i=>i.id)
+  })
+
   const [positions, setPositions] = useState({})
 
   // load positions from localStorage or compute default grid
@@ -214,6 +223,11 @@ export default function Desktop({content, windows, onOpen, onFocus, onUpdate, on
   // eslint-disable-next-line react-hooks/exhaustive-deps
   },[])
 
+  // persist iconsOrder when it changes
+  useEffect(()=>{
+    try{ localStorage.setItem('androidIconsOrder', JSON.stringify(iconsOrder)) }catch(e){}
+  },[iconsOrder])
+
   // keep the desktop wallpaper consistent across devices; show profile photo only inside the About window
   const wallpaper = '/assets/wallpaper.jpeg'
 
@@ -252,12 +266,42 @@ export default function Desktop({content, windows, onOpen, onFocus, onUpdate, on
           </div>
 
           <div ref={iconsRef} className="icons android-grid">
-            {iconsList.map(it=> (
-              <div key={it.id} className="card app-card" role="button" onClick={it.action} tabIndex={0}>
-                <div className="card-icon">{it.icon}</div>
-                <div className="card-body"><div className="label">{it.label}</div></div>
-              </div>
-            ))}
+            {iconsOrder.map(id => {
+              const it = iconsList.find(x=>x.id===id) || iconsList[0]
+              return (
+                <div key={it.id}
+                     className={"card app-card"}
+                     role="button"
+                     draggable
+                     onDragStart={(e)=>{ e.dataTransfer.setData('text/plain', it.id); e.dataTransfer.effectAllowed = 'move'; e.currentTarget.classList.add('dragging') }}
+                     onDragOver={(e)=>{ e.preventDefault(); e.currentTarget.classList.add('drag-over') }}
+                     onDragLeave={(e)=>{ e.currentTarget.classList.remove('drag-over') }}
+                     onDrop={(e)=>{
+                       e.preventDefault();
+                       const dragId = e.dataTransfer.getData('text/plain')
+                       const dropId = it.id
+                       if (dragId && dragId !== dropId){
+                         const next = [...iconsOrder]
+                         const from = next.indexOf(dragId)
+                         const to = next.indexOf(dropId)
+                         if (from > -1 && to > -1){
+                           next.splice(from,1)
+                           next.splice(to,0,dragId)
+                           setIconsOrder(next)
+                         }
+                       }
+                       // cleanup classes
+                       const cards = iconsRef.current && iconsRef.current.querySelectorAll('.card')
+                       cards && cards.forEach(c=>{ c.classList.remove('drag-over'); c.classList.remove('dragging') })
+                     }}
+                     onDragEnd={(e)=>{ e.currentTarget.classList.remove('dragging'); const cards = iconsRef.current && iconsRef.current.querySelectorAll('.card'); cards && cards.forEach(c=>c.classList.remove('drag-over')) }}
+                     onClick={it.action}
+                     tabIndex={0}>
+                  <div className="card-icon">{it.icon}</div>
+                  <div className="card-body"><div className="label">{it.label}</div></div>
+                </div>
+              )
+            })}
           </div>
 
           <div className="page-indicator">
