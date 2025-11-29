@@ -77,7 +77,7 @@ export default function Desktop({content, windows, onOpen, onFocus, onUpdate, on
       </div>
 
       {windows.map(w=> (
-        <WindowCmp key={w.id} win={w} content={content} onFocus={()=>onFocus(w.id)} onClose={()=>onClose(w.id)} onMinimize={()=>onMinimize(w.id)} onUpdate={(patch)=>onUpdate(w.id,patch)} />
+        <WindowCmp key={w.id} win={w} content={content} onFocus={()=>onFocus(w.id)} onClose={()=>onClose(w.id)} onMinimize={()=>onMinimize(w.id)} onUpdate={(patch)=>onUpdate(w.id,patch)} onOpen={(title)=>onOpen(title)} />
       ))}
 
       <StartMenu />

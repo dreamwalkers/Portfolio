@@ -29,7 +29,7 @@ function Header({title,onClose,onMinimize,onMaximize,onMouseDown,onRestart}){
   )
 }
 
-export default function WindowCmp({win, content, onFocus, onClose, onMinimize, onUpdate}){
+export default function WindowCmp({win, content, onFocus, onClose, onMinimize, onUpdate, onOpen}){
   const ref = useRef()
   const [state, setState] = useState({pos:win.position, size: win.size, maximized:false})
   const [visible, setVisible] = useState(false)
@@ -171,7 +171,29 @@ export default function WindowCmp({win, content, onFocus, onClose, onMinimize, o
           <div className="skills">{content.skills.map((s,i)=>(<span key={i} className="skill">{s}</span>))}</div>
         )}
         {win.title === 'Projects' && (
-          <div className="projects">{content.projects.map((p,i)=>(<div key={i} className="project"><strong>{p.name}</strong><div>{p.desc}</div></div>))}</div>
+          <div className="projects-folder-view" style={{display:'flex',flexWrap:'wrap',gap:12}}>
+            {Array.isArray(content.projects) && content.projects.map((p,i)=> (
+              <div key={i} className="project-folder" style={{width:120,display:'flex',flexDirection:'column',alignItems:'center',cursor:'pointer'}} onDoubleClick={()=>onOpen && onOpen(p.name)} onClick={(e)=>{ /* single click: select (no-op for now) */ }}>
+                <div style={{fontSize:48,lineHeight:1}}>📁</div>
+                <div style={{marginTop:8,textAlign:'center',fontWeight:600}}>{p.name}</div>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* Render individual project window when its title matches a project name */}
+        {Array.isArray(content.projects) && content.projects.some(pr => pr.name === win.title) && (
+          (() => {
+            const proj = content.projects.find(pr => pr.name === win.title)
+            return (
+              <div className="project-detail" style={{padding:12,overflow:'auto'}}>
+                <h3>{proj.name}</h3>
+                <div style={{marginBottom:12}}>{proj.desc}</div>
+                {proj.link ? (<div><a href={proj.link} target="_blank" rel="noreferrer">Open project</a></div>) : null}
+                {proj.details ? (<div style={{marginTop:8}}>{proj.details}</div>) : null}
+              </div>
+            )
+          })()
         )}
         {win.title === 'Contact' && (
           <div className="contact">
