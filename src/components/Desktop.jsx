@@ -155,6 +155,52 @@ export default function Desktop({content, windows, onOpen, onFocus, onUpdate, on
   // eslint-disable-next-line react-hooks/exhaustive-deps
   },[iconsRef.current, dockRef.current])
 
+  // touch gesture: swipe up from near the bottom to reveal the dock
+  useEffect(()=>{
+    if (!iconsRef.current) return undefined
+    let startY = 0, startX = 0, startTime = 0, tracking = false
+    function onTouchStart(e){
+      if (!e.touches || e.touches.length === 0) return
+      const t = e.touches[0]
+      startY = t.clientY
+      startX = t.clientX
+      startTime = Date.now()
+      // only begin tracking if touch starts near the bottom (within 140px)
+      tracking = (startY > window.innerHeight - 140)
+    }
+    function onTouchMove(e){
+      if (!tracking) return
+      // nothing to do here for now; we could provide feedback
+    }
+    function onTouchEnd(e){
+      if (!tracking) return
+      const endTime = Date.now()
+      const dt = endTime - startTime
+      // if there are changedTouches, use the last one
+      const t = (e.changedTouches && e.changedTouches[0]) || (e.touches && e.touches[0])
+      const endY = t ? t.clientY : 0
+      const endX = t ? t.clientX : 0
+      const deltaY = endY - startY
+      const deltaX = endX - startX
+      // detect an upward swipe with reasonable threshold and not too slow
+      if (deltaY < -40 && Math.abs(deltaX) < 60 && dt < 700){
+        // reveal the dock (user intent)
+        try{ setShowDock(true) }catch(e){}
+      }
+      tracking = false
+    }
+    const el = iconsRef.current
+    el.addEventListener('touchstart', onTouchStart, {passive:true})
+    el.addEventListener('touchmove', onTouchMove, {passive:true})
+    el.addEventListener('touchend', onTouchEnd, {passive:true})
+    return ()=>{
+      el.removeEventListener('touchstart', onTouchStart)
+      el.removeEventListener('touchmove', onTouchMove)
+      el.removeEventListener('touchend', onTouchEnd)
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  },[iconsRef.current])
+
   // ensure inert state follows combined visibility (showDock && dockVisible)
   useEffect(()=>{
     if (!dockRef.current) return
