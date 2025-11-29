@@ -1,0 +1,188 @@
+/* Minimal Android/Material inspired theme */
+.android-theme {
+  --bg-color: #fafafa;
+  --surface: #fff;
+  --primary: #3ddc84;
+  min-height: 100vh;
+  font-family: 'Roboto', 'Segoe UI', Arial, sans-serif;
+  color: rgba(0,0,0,0.87);
+}
+
+
+.android-theme .desktop {
+  display:flex;
+  flex-direction:column;
+  /* override global fixed height so mobile layout can grow/shrink correctly */
+  height: 100vh !important;
+  min-height:100vh;
+  padding-bottom: calc(72px + env(safe-area-inset-bottom)); /* space for bottom nav + notch/safe area */
+  background: linear-gradient(180deg,#f6f8fb,#fff);
+}
+
+/* Bottom navigation (Android) */
+.android-theme .taskbar {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: calc(64px + env(safe-area-inset-bottom));
+  padding-bottom: env(safe-area-inset-bottom);
+  background: rgba(255,255,255,0.98);
+  border-top: 1px solid rgba(0,0,0,0.06);
+  display:flex;
+  align-items:center;
+  justify-content:space-around;
+  box-shadow: 0 -6px 18px rgba(0,0,0,0.08);
+  gap: 6px;
+}
+
+.android-theme .start-button{ display:none }
+
+/* Android grid of app cards */
+.android-theme .icons.android-grid{
+  display:grid;
+  /* responsive columns: each tile has a sensible minimum width and grid will fit as many as possible */
+  grid-template-columns: repeat(auto-fit, minmax(96px, 1fr));
+  gap: 14px 10px;
+  padding: 12px;
+  grid-auto-rows: auto;
+  justify-items: center; /* center each card in its grid cell */
+  align-items: start;
+  max-width: 640px; /* constrain grid width so tiles form multiple columns on narrow viewports */
+  margin: 0 auto; /* center grid horizontally */
+  /* make the icons area flexible and scrollable so icons aren't hidden under header/dock */
+  flex: 1 1 auto;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+  /* leave bottom padding so last row isn't obscured by dock (reduced to reasonable value) */
+  padding-bottom: calc(110px + env(safe-area-inset-bottom));
+}
+
+/* icons container participates in normal layout; debug outline removed. */
+
+/* Override global absolute icons positioning so the Android layout participates in flex flow */
+.android-theme .icons{
+  position:static !important;
+  left: auto !important;
+  top: auto !important;
+  right: auto !important;
+  bottom: auto !important;
+  /* keep icons below app windows so opened windows appear above the grid */
+  z-index: 200 !important;
+}
+.android-theme .icons.android-grid .card{
+  /* layout like a mobile home screen icon: icon above, label below */
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:flex-start;
+  background:transparent;
+  border-radius:8px;
+  padding:6px 4px;
+  transition: transform .14s ease, box-shadow .14s ease;
+  min-height:92px;
+  color: rgba(0,0,0,0.92);
+  text-align:center;
+}
+
+/* prevent cards from stretching full width — constrain cell content width */
+.android-theme .icons.android-grid .card{
+  width: 96px; /* fixed tile width to ensure multi-column layout */
+  max-width:96px;
+  justify-self:center;
+}
+
+.android-theme .icons.android-grid .card{ position:relative; z-index:950 !important; }
+.android-theme .icons.android-grid .card *{ color:inherit; }
+.android-theme .icons.android-grid .card .card-icon svg{ display:block; width:100%; height:100% }
+.android-theme .icons.android-grid .card:active,
+.android-theme .icons.android-grid .card:focus,
+.android-theme .icons.android-grid .card:hover{
+  transform: translateY(-4px);
+  box-shadow: 0 8px 24px rgba(16,24,40,0.08);
+}
+
+.android-theme .card-icon{
+  width:72px; height:72px; display:flex; align-items:center; justify-content:center;
+  border-radius:18px; background:linear-gradient(180deg, rgba(255,255,255,0.98), rgba(250,250,250,0.98));
+  box-shadow: 0 6px 18px rgba(16,24,40,0.06);
+}
+.android-theme .card-icon img{ width:100%; height:100%; object-fit:cover; border-radius:14px }
+
+.android-theme .card-body .label{
+  font-weight:600;
+  font-size:12px;
+  color:rgba(0,0,0,0.9);
+  margin-top:8px;
+  line-height:1.1;
+  width:100%;
+  max-width:100%;
+  /* allow up to 2 lines, then truncate with ellipsis */
+  display:-webkit-box;
+  -webkit-line-clamp:2;
+  -webkit-box-orient:vertical;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  word-break:break-word;
+}
+.android-theme .card-body .hint{ font-size:12px; color:rgba(0,0,0,0.56); margin-top:4px }
+
+.android-theme .window{ border-radius:12px; overflow:hidden; border:1px solid rgba(0,0,0,0.06); background:var(--surface); z-index: 10 !important }
+
+/* Ensure XP-style windows appear above the Android icon grid and dock when opened */
+.android-theme .xp-window{ z-index: 1200 !important }
+
+/* Bottom navigation specific styles */
+.android-theme .taskbar.android-bottom-nav{ padding:8px 12px; height:auto }
+.android-theme .taskbar.android-bottom-nav .nav-btn{
+  background:transparent; border:none; padding:8px 12px; border-radius:10px; font-weight:600; color:rgba(0,0,0,0.7);
+}
+.android-theme .taskbar.android-bottom-nav .nav-btn:active,
+.android-theme .taskbar.android-bottom-nav .nav-btn:hover{
+  background: rgba(0,0,0,0.04);
+}
+
+/* Ensure comfortable spacing on very small screens */
+@media (max-width:420px){
+  /* Keep a multi-column grid on small phones by using smaller tile min width */
+  .android-theme .icons.android-grid{ grid-template-columns: repeat(auto-fit, minmax(72px, 1fr)); padding:10px }
+  .android-theme .card-icon{ width:56px; height:56px }
+  .android-theme .icons.android-grid{ max-width: 100%; }
+}
+
+/* Header & widgets */
+.android-theme .android-header{ padding: 18px 16px 6px; color:#fff; text-align:center }
+.android-theme .android-header .time{ font-size:18px; opacity:0.95 }
+.android-theme .android-header .date{ font-size:22px; font-weight:700; margin-top:6px }
+
+.android-theme .android-widgets{ display:flex; gap:12px; padding:12px 16px }
+.android-theme .android-widgets .widget{ flex:1; display:flex; gap:12px; align-items:center }
+.android-theme .android-widgets .widget .widget-left{ display:flex; flex-direction:column; align-items:center; gap:6px }
+.android-theme .android-widgets .widget .weather-emoji{ font-size:26px }
+.android-theme .android-widgets .widget .weather-temp{ font-size:20px; font-weight:700 }
+.android-theme .android-widgets .widget .widget-meta{ font-size:12px; color:rgba(0,0,0,0.6) }
+.android-theme .android-widgets .widget .large-number{ font-size:30px; font-weight:700; text-align:center }
+
+/* Search pill */
+.android-theme .android-search{ display:flex; justify-content:center; padding:12px }
+.android-theme .g-pill{ display:flex; align-items:center; gap:12px; width:56%; max-width:420px; background:linear-gradient(90deg, rgba(0,0,0,0.08), rgba(0,0,0,0.02)); padding:10px 14px; border-radius:999px; box-shadow:0 6px 18px rgba(16,24,40,0.06) }
+.android-theme .g-logo{ width:28px; height:28px; display:flex; align-items:center; justify-content:center; background:#fff; border-radius:8px; font-weight:700 }
+.android-theme .g-input{ flex:1; color:rgba(0,0,0,0.6) }
+.android-theme .g-mic{ opacity:0.9 }
+
+/* Page indicator */
+.android-theme .page-indicator{ display:flex; justify-content:center; gap:6px; margin-top:6px }
+.android-theme .page-indicator .dot{ width:8px; height:8px; background:rgba(0,0,0,0.18); border-radius:50% }
+.android-theme .page-indicator .dot.active{ width:10px; height:10px; background:rgba(0,0,0,0.34) }
+
+/* Dock */
+.android-theme .android-dock{ position:fixed; left:50%; transform:translateX(-50%); bottom:calc(12px + env(safe-area-inset-bottom)); display:flex; flex-direction:column; align-items:center; gap:8px; z-index:1000 }
+.android-theme .android-dock .dock-tray{ background: linear-gradient(180deg, rgba(255,255,255,0.92), rgba(255,255,255,0.96)); padding:8px 18px; border-radius:28px; display:flex; gap:14px; align-items:center; box-shadow:0 14px 34px rgba(16,24,40,0.14) }
+.android-theme .dock-btn{ background:transparent; border:none; display:flex; align-items:center; justify-content:center; padding:6px }
+.android-theme .dock-icon{ width:60px; height:60px; display:flex; align-items:center; justify-content:center; background:white; border-radius:16px; box-shadow:0 8px 22px rgba(16,24,40,0.12) }
+.android-theme .home-pill{ width:120px; height:6px; border-radius:999px; background:rgba(0,0,0,0.06) }
+
+/* debug visuals removed for production UI */
+
+

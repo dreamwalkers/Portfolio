@@ -1,4 +1,5 @@
 import React, {useState, useEffect} from 'react'
+import { useTheme } from '../ThemeProvider'
 
 function StartButton({onClick}){
   return (
@@ -35,6 +36,13 @@ function Tray(){
 
 export default function Taskbar({windows,onOpen,onRestore,onFocus}){
   const [showStart,setShowStart] = useState(false)
+  const { isMobile } = useTheme()
+
+  if (isMobile) {
+    // on mobile we render a dock inside Desktop; hide the XP taskbar
+    return null
+  }
+
   return (
     <div className="taskbar">
       <div className="left">

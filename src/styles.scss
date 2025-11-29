@@ -18,6 +18,32 @@ html,body,#root{height:100%;overflow:hidden}
 .desktop-icon .icon-art img{max-width:100%;max-height:100%;border-radius:8px;background:transparent}
 .icon-label{font-size:13px;color:#04233a;margin-top:8px}
 
+/* Ensure any inline <img> used for icons (app cards, dock) are constrained so
+   a full-resolution asset won't overflow or cover other UI elements. */
+.card .card-icon, .card .card-icon img, .dock-icon, .dock-icon img{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
+.card .card-icon img{
+  width:56px;
+  height:56px;
+  max-width:56px;
+  max-height:56px;
+  object-fit:cover;
+  border-radius:10px;
+  display:block;
+}
+.android-dock .dock-icon img, .dock-icon img{
+  width:40px;
+  height:40px;
+  max-width:40px;
+  max-height:40px;
+  object-fit:cover;
+  border-radius:8px;
+  display:block;
+}
+
 .desktop-icon.dragging{opacity:0.92;transform:translateZ(0);}
 
 /* Taskbar */
@@ -78,7 +104,11 @@ html,body,#root{height:100%;overflow:hidden}
 
 /* content styles */
 .about{display:flex;gap:0;align-items:stretch}
-.about .profile{width:300px;height:100%;border-radius:8px 0 0 8px;object-fit:cover;display:block;object-position:top center;margin:0;padding:0}
+.about .profile{width:300px;height:100%;border-radius:8px 0 0 8px;display:block;margin:0;padding:0;background-size:cover;background-position:center;background-repeat:no-repeat}
+/* ensure the profile background inside the About window does not intercept desktop interactions
+  or unintentionally overlay icons when layouts shift. The profile remains decorative inside the window. */
+.about .profile{pointer-events:none;z-index:0}
+.about-card{z-index:1}
 .about-text{display:flex;flex-direction:column}
 .about-text h2{margin:0; font-size:22px}
 .about-text h4{margin:6px 0 12px 0;color:#335; font-size:16px; font-weight:600}

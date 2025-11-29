@@ -124,7 +124,7 @@ export default function WindowCmp({win, content, onFocus, onClose, onMinimize, o
       <div className="xp-window-body">
         {win.title === 'About Me' && (
           <div className="about">
-            <img src={content.profile.photo} alt="profile" className="profile" />
+            <div className="profile" style={{backgroundImage: `url(${content.profile.photo})`}} />
             <div className="about-text">
               <div className="about-card">
                 <div className="about-badge">MY STORY</div>

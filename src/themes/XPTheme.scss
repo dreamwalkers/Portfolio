@@ -1,0 +1,41 @@
+/* Basic XP theme styles. Keep minimal and modular. */
+.xp-theme {
+  --bg-color: #008080;
+  --panel-bg: #cfe8ff;
+  --taskbar-bg: #c0d6f7;
+  --text-color: #000;
+  min-height: 100vh;
+}
+
+.xp-theme .desktop {
+  background-size: cover;
+  background-position: center;
+}
+
+.xp-theme .taskbar {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 40px;
+  background: linear-gradient(#d7e7ff,#bcd3ff);
+  border-top: 1px solid rgba(0,0,0,0.15);
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  padding: 0 8px;
+  box-shadow: 0 -1px 4px rgba(0,0,0,0.2);
+}
+
+.xp-theme .start-button{ display:flex; align-items:center; gap:6px }
+.xp-theme .start-text{ text-transform:lowercase; font-family: 'Segoe UI', Arial }
+
+.xp-theme .task-button{ margin:0 4px; background:#f3f7ff; border:1px solid rgba(0,0,0,0.08); padding:4px 8px }
+
+.xp-theme .desktop .icons img{ max-width:48px; border-radius:4px }
+
+/* Window look */
+.xp-theme .window {
+  border: 2px solid #2b5fa8;
+  background: linear-gradient(#fff,#e9f2ff);
+}

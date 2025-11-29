@@ -1,9 +1,13 @@
-import React, {useState, useEffect, useCallback} from 'react'
+import React, {useState, useEffect, useCallback, useRef} from 'react'
 import Icon from './Icon'
 import WindowCmp from './Window'
 import StartMenu from './StartMenu'
+import { useTheme } from '../ThemeProvider'
+ 
 
 export default function Desktop({content, windows, onOpen, onFocus, onUpdate, onClose, onMinimize}){
+  const { isMobile } = useTheme()
+  console.log('[Desktop] isMobile=', isMobile)
   // define icons with actions
     const iconsList = [
       {id:'xp-pong', label:'XP Pong', icon:(
@@ -68,19 +72,175 @@ export default function Desktop({content, windows, onOpen, onFocus, onUpdate, on
     persist(next)
   }
 
+  const dateStr = new Date().toLocaleDateString(undefined, { weekday: 'long', month: 'short', day: 'numeric' })
+
+  const iconsRef = useRef(null)
+  const dockRef = useRef(null)
+  const focusSinkRef = useRef(null)
+  const [dockVisible, setDockVisible] = useState(true)
+
+  // select dock icons (prefer certain ids if present)
+  const preferredDock = ['profile','resume','projects','linkedin']
+  const dockIcons = preferredDock.map(id => iconsList.find(i=>i.id===id)).filter(Boolean)
+
+  useEffect(()=>{
+    if (isMobile && iconsRef.current){
+      // ensure icons grid starts at top so first rows are visible
+      iconsRef.current.scrollTop = 0
+    }
+  },[isMobile])
+
+  // inert helper with fallback: if browser supports element.inert, use it.
+  function setInert(el, inert){
+    if (!el) return
+    try{
+      if ('inert' in HTMLElement.prototype){
+        el.inert = inert
+        return
+      }
+    }catch(e){}
+    // fallback: toggle aria-hidden and disable focusable descendants
+    if (inert){
+      el.setAttribute('aria-hidden','true')
+      const focusables = el.querySelectorAll('a,button,input,select,textarea,[tabindex]')
+      focusables.forEach(f=>{
+        const prev = f.getAttribute('tabindex')
+        if (prev !== null) f.setAttribute('data-prev-tabindex', prev)
+        f.setAttribute('tabindex','-1')
+      })
+    } else {
+      el.removeAttribute('aria-hidden')
+      const focusables = el.querySelectorAll('[data-prev-tabindex]')
+      focusables.forEach(f=>{
+        const prev = f.getAttribute('data-prev-tabindex')
+        if (prev !== null) f.setAttribute('tabindex', prev)
+        f.removeAttribute('data-prev-tabindex')
+      })
+      // also restore any that were set to -1 but had no data-prev (best effort)
+      const maybes = el.querySelectorAll('[tabindex="-1"]')
+      maybes.forEach(f=>{
+        if (!f.hasAttribute('data-prev-tabindex')) f.removeAttribute('tabindex')
+      })
+    }
+  }
+
+  // hide dock while user scrolls; move focus to a hidden sink before hiding to avoid aria-hidden on focused element
+  useEffect(()=>{
+    if (!iconsRef.current || !dockRef.current) return undefined
+    let timeout = null
+    function onScroll(){
+      // if already hidden, refresh timeout
+      if (dockVisible){
+        // move focus away from dock if it's focused
+        const active = document.activeElement
+        if (dockRef.current.contains(active)){
+          // focus the sink
+          try{ focusSinkRef.current && focusSinkRef.current.focus() }catch(e){}
+        }
+        // apply inert to dock
+        setInert(dockRef.current, true)
+        setDockVisible(false)
+      }
+      clearTimeout(timeout)
+      timeout = setTimeout(()=>{
+        // on scroll end, restore dock
+        setInert(dockRef.current, false)
+        setDockVisible(true)
+      }, 450)
+    }
+    const el = iconsRef.current
+    el.addEventListener('scroll', onScroll, {passive:true})
+    return ()=>{ el.removeEventListener('scroll', onScroll); clearTimeout(timeout) }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  },[iconsRef.current, dockRef.current])
+
+  useEffect(()=>{
+    // log icon count for debugging
+    try{ console.log('[Desktop] icons count=', iconsList.length) }catch(e){}
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  },[])
+
+  // keep the desktop wallpaper consistent across devices; show profile photo only inside the About window
+  const wallpaper = '/assets/wallpaper.jpeg'
+
   return (
-    <div className="desktop" style={{backgroundImage:'url(/assets/wallpaper.jpeg)'}}>
-      <div className="icons" role="list">
-        {iconsList.map(it=> (
-          <Icon key={it.id} id={it.id} label={it.label} icon={it.icon} pos={positions[it.id] || {x:0,y:0}} onDoubleClick={it.action} onMoveEnd={handleMoveEnd} />
-        ))}
-      </div>
+    <div className="desktop" style={{backgroundImage:`url(${wallpaper})`}}>
+      {isMobile ? (
+        <>
+          <header className="android-header">
+            <div className="time">{new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}</div>
+            <div className="date">{dateStr}</div>
+          </header>
+
+          <div className="android-widgets">
+            <div className="widget card">
+              <div className="widget-left">
+                <div className="weather-emoji">🌙</div>
+                <div className="weather-temp">23°</div>
+              </div>
+              <div className="widget-meta">
+                <div className="place">Kale Township</div>
+                <div className="updated">Updated 11/25 6:26 PM</div>
+              </div>
+            </div>
+            <div className="widget card">
+              <div className="large-number">30</div>
+              <div className="small-meta">days left<br/><strong>Christmas Day</strong></div>
+            </div>
+          </div>
+
+          <div className="android-search">
+            <div className="g-pill">
+              <div className="g-logo">G</div>
+              <div className="g-input">Search</div>
+              <div className="g-mic">🎤</div>
+            </div>
+          </div>
+
+          <div ref={iconsRef} className="icons android-grid">
+            {iconsList.map(it=> (
+              <div key={it.id} className="card app-card" role="button" onClick={it.action} tabIndex={0}>
+                <div className="card-icon">{it.icon}</div>
+                <div className="card-body"><div className="label">{it.label}</div></div>
+              </div>
+            ))}
+          </div>
+
+          <div className="page-indicator">
+            <span className="dot active" />
+            <span className="dot" />
+            <span className="dot" />
+          </div>
+
+          {/* android dock must not be aria-hidden while its buttons can receive focus */}
+          <nav className="android-dock" ref={dockRef} aria-hidden={dockVisible ? 'false' : 'true'}>
+            <div className="dock-tray">
+              {dockIcons.map((d,i)=> (
+                <button key={d.id} className="dock-btn" onClick={d.action} aria-label={d.label}>
+                  <div className="dock-icon">{d.icon}</div>
+                </button>
+              ))}
+            </div>
+            <div className="home-pill" />
+          </nav>
+          {/* hidden focus sink used when moving focus away from dock before hiding it */}
+          <button ref={focusSinkRef} aria-hidden="true" tabIndex={-1} style={{position:'absolute',left:-9999,top:-9999,width:1,height:1,border:0,padding:0,opacity:0}}>.</button>
+        </>
+      ) : (
+        <div className="icons" role="list">
+          {iconsList.map(it=> (
+            <Icon key={it.id} id={it.id} label={it.label} icon={it.icon} pos={positions[it.id] || {x:0,y:0}} onDoubleClick={it.action} onMoveEnd={handleMoveEnd} />
+          ))}
+        </div>
+      )}
 
       {windows.map(w=> (
         <WindowCmp key={w.id} win={w} content={content} onFocus={()=>onFocus(w.id)} onClose={()=>onClose(w.id)} onMinimize={()=>onMinimize(w.id)} onUpdate={(patch)=>onUpdate(w.id,patch)} onOpen={(title)=>onOpen(title)} />
       ))}
 
-      <StartMenu />
+      {!isMobile && <StartMenu />}
     </div>
   )
-}
+    }
+
+

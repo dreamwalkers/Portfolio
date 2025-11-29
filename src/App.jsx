@@ -2,11 +2,15 @@ import React, {useState, useEffect} from 'react'
 import Desktop from './components/Desktop'
 import Taskbar from './components/Taskbar'
 import DesktopSplash from './components/Splash'
+import ThemeProvider from './ThemeProvider'
 import content from './content.json'
 
 export default function App(){
   console.log('App mount')
-  const [showSplash, setShowSplash] = useState(true)
+  // detect mobile early to skip long splash on phones
+  const mobile = /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent) || window.innerWidth <= 768
+  const [showSplash, setShowSplash] = useState(!mobile)
+  console.log('[App] initial mobile=', mobile, 'showSplash=', !mobile)
   const [windows, setWindows] = useState([]) // {id, title, type, minimized, z, position, size}
   const [zIndex, setZIndex] = useState(10)
 
@@ -59,7 +63,7 @@ export default function App(){
   }
 
   return (
-    <div className="xp-root">
+    <ThemeProvider>
       {showSplash ? (
         <React.Suspense fallback={null}>
           <div style={{position:'absolute',inset:0,zIndex:9999}}>
@@ -69,6 +73,6 @@ export default function App(){
       ) : null}
       <Desktop content={content} windows={windows} onOpen={openWindow} onFocus={focusWindow} onUpdate={updateWindow} onClose={closeWindow} onMinimize={minimizeWindow} />
       <Taskbar windows={windows} onOpen={openWindow} onRestore={restoreWindow} onFocus={focusWindow} />
-    </div>
+    </ThemeProvider>
   )
 }
