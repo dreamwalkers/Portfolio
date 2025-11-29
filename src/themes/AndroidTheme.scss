@@ -177,7 +177,7 @@
 .android-theme .page-indicator .dot.active{ width:10px; height:10px; background:rgba(0,0,0,0.34) }
 
 /* Dock */
-.android-theme .android-dock{ position:fixed; left:50%; transform:translateX(-50%); bottom:calc(12px + env(safe-area-inset-bottom)); display:flex; flex-direction:column; align-items:center; gap:8px; z-index:1000 }
+.android-theme .android-dock{ position:fixed; left:50%; transform:translateX(-50%); /* overlap safe-area intentionally */ bottom: 0; display:flex; flex-direction:column; align-items:center; gap:8px; z-index:1000 }
 .android-theme .android-dock .dock-tray{ background: linear-gradient(180deg, rgba(255,255,255,0.92), rgba(255,255,255,0.96)); padding:8px 18px; border-radius:28px; display:flex; gap:14px; align-items:center; box-shadow:0 14px 34px rgba(16,24,40,0.14) }
 .android-theme .dock-btn{ background:transparent; border:none; display:flex; align-items:center; justify-content:center; padding:6px }
 .android-theme .dock-icon{ width:60px; height:60px; display:flex; align-items:center; justify-content:center; background:white; border-radius:16px; box-shadow:0 8px 22px rgba(16,24,40,0.12) }
