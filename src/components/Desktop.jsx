@@ -78,6 +78,7 @@ export default function Desktop({content, windows, onOpen, onFocus, onUpdate, on
   const dockRef = useRef(null)
   const focusSinkRef = useRef(null)
   const [dockVisible, setDockVisible] = useState(true)
+  const [showDock, setShowDock] = useState(false)
 
   // select dock icons (prefer certain ids if present)
   const preferredDock = ['profile','resume','projects','linkedin']
@@ -154,6 +155,13 @@ export default function Desktop({content, windows, onOpen, onFocus, onUpdate, on
   // eslint-disable-next-line react-hooks/exhaustive-deps
   },[iconsRef.current, dockRef.current])
 
+  // ensure inert state follows combined visibility (showDock && dockVisible)
+  useEffect(()=>{
+    if (!dockRef.current) return
+    const visible = !!(showDock && dockVisible)
+    setInert(dockRef.current, !visible)
+  },[showDock, dockVisible])
+
   useEffect(()=>{
     // log icon count for debugging
     try{ console.log('[Desktop] icons count=', iconsList.length) }catch(e){}
@@ -213,7 +221,7 @@ export default function Desktop({content, windows, onOpen, onFocus, onUpdate, on
           </div>
 
           {/* android dock must not be aria-hidden while its buttons can receive focus */}
-          <nav className="android-dock" ref={dockRef} aria-hidden={dockVisible ? 'false' : 'true'}>
+          <nav className={"android-dock" + (showDock && dockVisible ? '' : ' hidden')} ref={dockRef} aria-hidden={(showDock && dockVisible) ? 'false' : 'true'}>
             <div className="dock-tray">
               {dockIcons.map((d,i)=> (
                 <button key={d.id} className="dock-btn" onClick={d.action} aria-label={d.label}>
@@ -223,6 +231,10 @@ export default function Desktop({content, windows, onOpen, onFocus, onUpdate, on
             </div>
             <div className="home-pill" />
           </nav>
+          {/* floating toggle to show/hide dock */}
+          <button className="dock-toggle" onClick={()=>setShowDock(s=>!s)} aria-pressed={showDock} aria-label={showDock ? 'Hide dock' : 'Show dock'}>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M12 5v14" stroke="#334" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" opacity={showDock?1:0.6}/><path d="M5 12h14" stroke="#334" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" opacity={showDock?0.6:1}/></svg>
+          </button>
           {/* hidden focus sink used when moving focus away from dock before hiding it */}
           <button ref={focusSinkRef} aria-hidden="true" tabIndex={-1} style={{position:'absolute',left:-9999,top:-9999,width:1,height:1,border:0,padding:0,opacity:0}}>.</button>
         </>
