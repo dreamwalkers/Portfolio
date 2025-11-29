@@ -11,8 +11,8 @@
 html,body,#root{height:100%;overflow:hidden}
 .xp-root{height:100vh;position:relative;overflow:hidden}
 
-.desktop{height:calc(100vh - 40px);background-size:cover;background-position:center;padding:16px}
-.icons{position:absolute;left:0;top:0;right:0;bottom:0}
+.desktop{height:calc(100vh - 40px);background-size:cover;background-position:center;padding:16px;position:relative;z-index:0}
+.icons{position:absolute;left:0;top:0;right:0;bottom:0;z-index:2}
 .desktop-icon{width:96px;color:#072034;text-shadow:none;cursor:pointer;display:flex;flex-direction:column;align-items:center;text-align:center;touch-action:none;user-select:none}
 .desktop-icon .icon-art{height:72px;width:72px;display:flex;align-items:center;justify-content:center;border-radius:10px;background:transparent}
 .desktop-icon .icon-art img{max-width:100%;max-height:100%;border-radius:8px;background:transparent}
@@ -182,4 +182,24 @@ html,body,#root{height:100%;overflow:hidden}
 
 
 .xp-status{color:#cfe9ff;margin-bottom:24px;font-weight:600}
+
+/* Watermark on the desktop wallpaper */
+.desktop::after{
+  content: "© Backend Infotech Pvt Ltd";
+  position: absolute;
+  left: 50%;
+    top: 68%; /* moved lower for better readability */
+  transform: translate(-50%, -50%) rotate(-8deg);
+  font-size: 16px;
+    color: rgba(0,0,0,0.62); /* darker for contrast against bright wallpaper */
+  pointer-events: none;
+  user-select: none;
+  text-shadow: 0 2px 6px rgba(255,255,255,0.35);
+  mix-blend-mode: normal;
+  z-index: 1; /* above wallpaper but below icons/windows */
+}
+
+@media(max-width:900px){
+  .desktop::after{ font-size:13px; left:50%; top:72%; transform: translate(-50%,-50%) rotate(-6deg); color: rgba(0,0,0,0.56) }
+}
 
