@@ -86,4 +86,4 @@ npm run dev
 - Open the Start menu and open "Projects" — confirm folder-style tiles appear; double-click a project to open its detail window.
 - Confirm the watermark `© Backend Infotech Pvt Ltd` is visible near the lower center-right of the wallpaper. If it's still hard to read, change `src/styles.scss` (selector `.desktop::after`) to adjust `top`, `left`, `font-size`, or `color`.
 
-If you'd like, I can open a PR with these changes, or make the watermark more/less prominent or move it to a different position.
+
